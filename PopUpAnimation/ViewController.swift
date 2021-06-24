@@ -28,6 +28,7 @@ class PopUpAnimationViewController: UIViewController {
             let view = UIView()
             view.backgroundColor = color
             view.layer.cornerRadius = iconHeight / 2
+            view.isUserInteractionEnabled = true
             return view
         })
         
@@ -43,6 +44,7 @@ class PopUpAnimationViewController: UIViewController {
         containerView.layer.shadowColor = UIColor(white: 0.4, alpha: 0.4).cgColor
         containerView.layer.shadowRadius = 8
         containerView.layer.shadowOpacity = 0.5
+        containerView.layer.shadowOffset = CGSize(width: 0, height: 4)
       
         
         
@@ -66,15 +68,46 @@ class PopUpAnimationViewController: UIViewController {
     @objc func handleLongPress(gesture: UILongPressGestureRecognizer) {
         
         if gesture.state == .began {
-            
             handleGestureBegan(gesture: gesture)
-
         }
         
         if gesture.state == .ended {
-            containerView.removeFromSuperview()
+            
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut) {
+                let stackView = self.containerView.subviews.first
+                stackView?.subviews.forEach({ subView in
+                    subView.transform = .identity
+                    
+                })
+            } completion: { _ in
+                self.containerView.removeFromSuperview()
+            }
         }
         
+        if gesture.state == .changed {
+            handleGestureChanged(gesture: gesture)
+        }
+        
+    }
+    
+    fileprivate func handleGestureChanged(gesture: UILongPressGestureRecognizer) {
+        let location = gesture.location(in: self.containerView)
+        print(location)
+        let hitTestView = containerView.hitTest(location, with: nil)
+    
+        
+        if hitTestView is UIView {
+            UIView.animate(withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 1, options: .curveEaseOut) {
+               
+                let stackView = self.containerView.subviews.first
+                stackView?.subviews.forEach({ subView in
+                    subView.transform = .identity
+                    
+                })
+                
+                hitTestView?.transform = CGAffineTransform(translationX: 0, y: -50)
+            }
+        }
     }
     
     fileprivate func handleGestureBegan(gesture: UILongPressGestureRecognizer) {
